@@ -9,9 +9,9 @@ time_table_drop = "Drop table IF EXISTS time"
 # CREATE TABLES
 
 songplay_table_create = ("""CREATE TABLE IF NOT EXISTS songplays (
-                                                                    songplay_id varchar PRIMARY KEY, 
-                                                                    start_time timestamp, 
-                                                                    user_id varchar,
+                                                                    songplay_id serial PRIMARY KEY, 
+                                                                    start_time timestamp NOT NULL, 
+                                                                    user_id int NOT NULL,
                                                                     level varchar, 
                                                                     song_id varchar, 
                                                                     artist_id varchar, 
@@ -49,7 +49,7 @@ artist_table_create = ("""CREATE TABLE IF NOT EXISTS artists (
 """)
 
 time_table_create = ("""CREATE TABLE IF NOT EXISTS time (
-                                                            start_time timestamp NOT NULL,
+                                                            start_time timestamp PRIMARY KEY,
                                                             hour int NOT NULL,
                                                             day int NOT NULL,
                                                             week int NOT NULL,
@@ -61,8 +61,7 @@ time_table_create = ("""CREATE TABLE IF NOT EXISTS time (
 
 # INSERT RECORDS
 
-songplay_table_insert = ("""INSERT INTO songplays (
-                                                    songplay_id, 
+songplay_table_insert = ("""INSERT INTO songplays ( 
                                                     start_time, 
                                                     user_id,
                                                     level, 
@@ -72,7 +71,7 @@ songplay_table_insert = ("""INSERT INTO songplays (
                                                     location, 
                                                     user_agent
                                                 )
-                                                    VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                                                    VALUES(%s,%s,%s,%s,%s,%s,%s,%s)
                                                     ON CONFLICT DO NOTHING
 """)
 
@@ -84,7 +83,7 @@ user_table_insert = ("""INSERT INTO users (
                                             level
                                         )
                                             VALUES(%s,%s,%s,%s,%s)
-                                            ON CONFLICT DO NOTHING
+                                            ON CONFLICT(user_id) DO UPDATE SET level = excluded.level
 """)
 
 song_table_insert = ("""INSERT INTO songs (

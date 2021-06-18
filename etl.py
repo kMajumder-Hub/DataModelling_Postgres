@@ -3,9 +3,18 @@ import glob
 import psycopg2
 import pandas as pd
 from sql_queries import *
-#from datetime import datetime
 import datetime
 
+"""
+    This procedure processes a song file whose filepath has been provided as an arugment.
+    It extracts the song information in order to store it into the songs table.
+    Then it extracts the artist information in order to store it into the artists table.
+
+    INPUTS: 
+    * cur the cursor variable
+    * filepath the file path to the song file
+    
+"""
 
 def process_song_file(cur, filepath):
     # open song file
@@ -19,6 +28,16 @@ def process_song_file(cur, filepath):
     artist_data = list(df[["artist_id", "artist_name", "artist_location", "artist_latitude", "artist_longitude"]].values.flatten())
     cur.execute(artist_table_insert, artist_data)
 
+
+"""
+    This procedure processes a log file whose filepath has been provided as an arugment.
+    It extracts the log information in order to store it into the time, users, and sonlplays table.
+
+    INPUTS: 
+    * cur the cursor variable
+    * filepath the file path to the log file
+    
+"""
 
 def process_log_file(cur, filepath):
     # open log file
@@ -34,7 +53,7 @@ def process_log_file(cur, filepath):
     start_time = t
     hour = t.dt.hour
     day = t.dt.day
-    week = t.dt.week
+    week = t.dt.isocalendar().week
     month = t.dt.month
     year = t.dt.year
     weekday = t.dt.weekday
@@ -54,7 +73,7 @@ def process_log_file(cur, filepath):
         cur.execute(user_table_insert, row)
 
     # insert songplay records
-    songplayId = 0
+    #songplayId = 0
     for index, row in df.iterrows():
         
         # get songid and artistid from song and artist tables
@@ -66,12 +85,23 @@ def process_log_file(cur, filepath):
         else:
             songid, artistid = None, None
 
-        songplayId = songplayId+1
+        #songplayId = songplayId+1
         # insert songplay record
-        songplay_data = (songplayId, datetime.datetime.fromtimestamp(row.ts / 1e3), row.userId, row.level, songid, artistid, row.sessionId, row.location, row.userAgent)
+        songplay_data = (datetime.datetime.fromtimestamp(row.ts / 1e3), row.userId, row.level, songid, artistid, row.sessionId, row.location, row.userAgent)
         cur.execute(songplay_table_insert, songplay_data)
 
 
+"""
+    This procedure reads the files from the file system and call the processor 
+    function to transform and store the information.
+    
+    INPUTS:
+    * cur the cursor variable
+    * conn the database connection
+    * filepath the file location
+    * func the processor function that needs to be invoked
+
+"""
 def process_data(cur, conn, filepath, func):
     # get all files matching extension from directory
     all_files = []
@@ -89,10 +119,13 @@ def process_data(cur, conn, filepath, func):
         func(cur, datafile)
         conn.commit()
         print('{}/{} files processed.'.format(i, num_files))
+        
 
-
+"""
+    The main procedure that will be invoked when the script is invoked.
+"""
 def main():
-    conn = psycopg2.connect("host=127.0.0.1 dbname=sparkifydb user=student password=student")
+    conn = psycopg2.connect("host=127.0.0.1 dbname=sparkifydb user=postgres password=student")
     cur = conn.cursor()
 
     process_data(cur, conn, filepath='data/song_data', func=process_song_file)
