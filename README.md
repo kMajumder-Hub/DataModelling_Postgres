@@ -2,6 +2,9 @@
 
 This project creates a postgres database sparkifydb for a music app, Sparkify. The purpose of the database is to model song and log datasets (originally stored in JSON format) with a star schema optimised for queries on song play analysis.
 
+The dataset used in this project is a subset of Million song database (http://millionsongdataset.com/)
+The log file has been generated using the following tool - https://github.com/Interana/eventsim
+
 ## Schema design and ETL pipeline
 
 The star schema has 1 fact table (songplays), and 4 dimension tables (users, songs, artists, time). DROP, CREATE, INSERT, and SELECT queries are defined in sql_queries.py. create_tables.py uses functions create_database, drop_tables, and create_tables to create the database sparkifydb and the required tables.
